@@ -13,6 +13,9 @@ import datetime, pytz, requests
 from app import create_app
 from app.main import bp
 
+from PIL import Image
+from io import BytesIO
+
 from config import Config
 import random
 import time
@@ -52,6 +55,15 @@ def screenshot_bot(url):
     driver.save_screenshot("{}/img/screenshot-2.png".format(outputdir))
     driver.close()
 
+    image = Image.open("{}/img/screenshot-2.png".format(outputdir))
+    width, height = image.size
+
+    if height > 3000:
+        image = image.resize((1500,3500))
+        fpath = BytesIO()
+        image.save("{}/img/screenshot-2.png".format(outputdir), 'PNG', dpi=[800, 600], quality=40)
+        fpath.seek(0)
+
 
 class Struct:
     def __init__(self, **entries):
@@ -84,17 +96,11 @@ def lalala(message):
         try:
             url_val = response= requests.get(message.text)
             status = response.status_code
-
             screenshot_bot(message.text)
-            time.sleep(5)
             msgid = message.message_id
-            print(msgid)
             logging.info('This is an info message')
 
-            logging.info("{}/img/screenshot-2.png".format(outputdir))
-
             bot.send_chat_action(message.chat.id, 'upload_photo')
-
             with open("{}/img/screenshot-2.png".format(outputdir), 'rb') as photo:
                 bot.send_photo(message.chat.id, photo, reply_to_message_id=msgid)
 
