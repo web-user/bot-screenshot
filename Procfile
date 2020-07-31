@@ -1,0 +1,1 @@
+web: gunicorn appmk:app --log-file -
